@@ -38,12 +38,12 @@ class _WrapperState extends State<Wrapper> {
   final auth = FirebaseAuth.instance;
 
   final navigationKey = GlobalKey<CurvedNavigationBarState>();
-  var index = 0;
+  var index = 1;
   final screens = [
     Home(),
+    Overall(),
     Notebooks(),
     Income(),
-    Overall(),
   ];
 
   toggleMenu([bool end = false]) {
@@ -272,11 +272,11 @@ class _WrapperState extends State<Wrapper> {
                 });
                 toggleMenu();
               },
-              leading: Icon(Icons.dashboard_rounded,
+              leading: Icon(Icons.monetization_on,
                   size: 20.0,
                   color: (index == 1) ? Color(0xFF161927) : Colors.white),
               title: Text(
-                "Notebooks",
+                "Overall",
                 style: TextStyle(
                     fontFamily: 'Montserrat_500',
                     fontSize: 15,
@@ -294,11 +294,11 @@ class _WrapperState extends State<Wrapper> {
                 });
                 toggleMenu();
               },
-              leading: Icon(Icons.verified_user,
+              leading: Icon(Icons.dashboard_rounded,
                   size: 20.0,
                   color: (index == 2) ? Color(0xFF161927) : Colors.white),
               title: Text(
-                "Income",
+                "Notebooks",
                 style: TextStyle(
                     fontFamily: 'Montserrat_500',
                     fontSize: 15,
@@ -316,11 +316,11 @@ class _WrapperState extends State<Wrapper> {
                 });
                 toggleMenu();
               },
-              leading: Icon(Icons.monetization_on,
+              leading: Icon(Icons.verified_user,
                   size: 20.0,
                   color: (index == 3) ? Color(0xFF161927) : Colors.white),
               title: Text(
-                "Overall",
+                "Income",
                 style: TextStyle(
                     fontFamily: 'Montserrat_500',
                     fontSize: 15,
