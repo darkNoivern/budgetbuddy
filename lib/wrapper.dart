@@ -1,8 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:budgetbuddy/screens/income.dart';
 import 'package:budgetbuddy/screens/overall.dart';
-import 'package:budgetbuddy/screens/swipingCards.dart';
-import 'package:budgetbuddy/screens/wishlist.dart';
+import 'package:budgetbuddy/screens/upgrade.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:random_avatar/random_avatar.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -11,10 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shrink_sidemenu/shrink_sidemenu.dart';
 
-import 'package:budgetbuddy/screens/cards.dart';
 import 'package:budgetbuddy/screens/home.dart';
 import 'package:budgetbuddy/screens/notebooks.dart';
-import 'package:budgetbuddy/screens/payment.dart';
 import 'package:budgetbuddy/screens/onboarding.dart';
 
 import 'package:iconify_flutter/iconify_flutter.dart';
@@ -36,6 +33,7 @@ class _WrapperState extends State<Wrapper> {
   final GlobalKey<SideMenuState> _endSideMenuKey = GlobalKey<SideMenuState>();
 
   final auth = FirebaseAuth.instance;
+  User? user = FirebaseAuth.instance.currentUser;
 
   final navigationKey = GlobalKey<CurvedNavigationBarState>();
   var index = 1;
@@ -44,6 +42,7 @@ class _WrapperState extends State<Wrapper> {
     Overall(),
     Notebooks(),
     Income(),
+    Upgrade(),
   ];
 
   toggleMenu([bool end = false]) {
@@ -86,6 +85,10 @@ class _WrapperState extends State<Wrapper> {
         Icons.currency_rupee_rounded,
         size: 24,
       ),
+      Icon(
+        Icons.link_rounded,
+        size: 24,
+      )
     ];
 
     Future<bool> _getHasSeenOnboarding() async {
@@ -164,8 +167,10 @@ class _WrapperState extends State<Wrapper> {
                             Text(
                               'BudgetBuddy',
                               style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Montserrat_400',
+                                fontSize: 16.0,
+                                color: Colors.white,
+                                // fontWeight: FontWeight.bold,
                               ),
                             ),
                             // Image.asset('assets/images/915.png'),
@@ -233,8 +238,10 @@ class _WrapperState extends State<Wrapper> {
                               color: Colors.white,
                               fontFamily: 'Montserrat_500'),
                         ),
-                        Text(
-                            "${FirebaseAuth.instance.currentUser?.email.toString()}",
+                        Text( (FirebaseAuth.instance.currentUser?.email != null) ?
+                            "${FirebaseAuth.instance.currentUser?.email.toString()}"
+                            :
+                            "guest_${FirebaseAuth.instance.currentUser?.uid.toString().substring(0, 4)}",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Montserrat_600')),
@@ -331,6 +338,29 @@ class _WrapperState extends State<Wrapper> {
 
               // padding: EdgeInsets.zero,
             ),
+            if(user!=null && user!.isAnonymous)
+              ListTile(
+                onTap: () {
+                  setState(() {
+                    index = 4;
+                  });
+                  toggleMenu();
+                },
+                leading: Icon(Icons.link_rounded,
+                    size: 20.0,
+                    color: (index == 4) ? Color(0xFF161927) : Colors.white),
+                title: Text(
+                  "Upgrade Profile",
+                  style: TextStyle(
+                      fontFamily: 'Montserrat_500',
+                      fontSize: 15,
+                      color: (index == 4) ? Color(0xFF161927) : Colors.white),
+                ),
+                textColor: Colors.white,
+                dense: true,
+
+                // padding: EdgeInsets.zero,
+              ),
           ],
         ),
       ),

@@ -72,7 +72,7 @@ class _NotebookState extends State<Notebook> {
 
             Map<String, dynamic> expenses = (transactions.isNotEmpty) ? transactions.reduce((value, element){
               return {
-                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
               };
             }) : {'amount': 0};
 
@@ -93,7 +93,7 @@ class _NotebookState extends State<Notebook> {
             // }).toList();
 
 
-            List<int> result = (transactions.isNotEmpty) ? List.generate(firebasecategories.length, (i) => transactions.where((t) => (t['category'] == firebasecategories[i])).fold(0, (sum, t) => sum + int.parse(t['amount'].toString()))) : List.filled(firebasecategories.length, 0);
+            List<double> result = (transactions.isNotEmpty) ? List.generate(firebasecategories.length, (i) => transactions.where((t) => (t['category'] == firebasecategories[i])).fold(0, (sum, t) => sum + double.parse(t['amount'].toString()))) : List.filled(firebasecategories.length, 0);
 
             List<ChartData> newChartData = List
               .generate(firebasecategories.length, (i) => ChartData(firebasecategories[i],result[i]));
@@ -270,7 +270,7 @@ class _NotebookState extends State<Notebook> {
 
                                                   expenses = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -331,7 +331,7 @@ class _NotebookState extends State<Notebook> {
 
                                                   expenses = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -472,8 +472,10 @@ class _NotebookState extends State<Notebook> {
                                               border: Border(
                                                   right: BorderSide(
                                                       width: 1.0,
-                                                      color:
-                                                          Color(0xFFBABCC4)))),
+                                                      color: Color(0xFFBABCC4)
+                                                  )
+                                              )
+                                          ),
                                           child: Center(
                                               child: Text(
                                             'Manage',
@@ -640,7 +642,7 @@ class _NotebookState extends State<Notebook> {
 
                                             expenses = (transactions.length > 0) ? transactions.reduce((value, element){
                                               return {
-                                                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                               };
                                             }) : {'amount': 0};
 
@@ -1291,16 +1293,12 @@ class _NotebookState extends State<Notebook> {
                                           }
 
                                           var latest = {
-                                            'amount': _amountController.text
-                                                .toString(),
+                                            'amount': _amountController.text,
                                             'category': _category,
                                             'superiorcategory': name,
                                             'type': "expense",
-                                            'description':
-                                            _descriptionController.text.trim()
-                                                .toString(),
-                                            'reason': _reasonController.text.trim()
-                                                .toString(),
+                                            'description': _descriptionController.text.trim().toString(),
+                                            'reason': _reasonController.text.trim().toString(),
                                             'fulldate': Timestamp.now(),
                                           };
 
@@ -1466,5 +1464,5 @@ class _NotebookState extends State<Notebook> {
 class ChartData {
   ChartData(this.x, this.y);
   final String x;
-  final int y;
+  final double y;
 }

@@ -46,7 +46,7 @@ class _SplashState extends State<Splash> {
           ),
           RandomTextReveal(
             text: 'BudgetBuddy',
-            duration: Duration(seconds: 2),
+            duration: Duration(milliseconds: 1500,),
             style: TextStyle(
                 fontFamily: 'Aquire',
                 fontSize: 24,

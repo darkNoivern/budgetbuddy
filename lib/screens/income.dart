@@ -39,6 +39,13 @@ class _IncomeState extends State<Income> {
   DateTime endDate = DateTime(2030);
   DateTime currDate = DateTime(2000);
 
+  TextEditingController _categoryController = new TextEditingController();
+
+  List<Categories> _list = [
+    Categories(name: 'Others', showCross: false),
+  ];
+
+  List<String> categoryList = ['Others'];
 
   String description = "List of Incomes";
 
@@ -53,13 +60,91 @@ class _IncomeState extends State<Income> {
 
   @override
   Widget build(BuildContext context) {
+
     final name = ModalRoute.of(context)!.settings.arguments;
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
+
+    void updateincomecategories() async{
+
+      if (_categoryController.text.trim() == "") {
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior:
+          SnackBarBehavior.floating,
+          backgroundColor:
+          Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap !!',
+            message:
+            'Empty field detected !',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType:
+            ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
+        return;
+      }
+
+      if (categoryList.contains(_categoryController.text.toString())) {
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior:
+          SnackBarBehavior.floating,
+          backgroundColor:
+          Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap !!',
+            message:
+            'Duplicate categories found',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType:
+            ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+        return;
+      }
+
+      List<Categories> newarr = _list;
+      List<String> xrr = categoryList;
+      newarr.add(Categories(
+          name: _categoryController.text.trim().toString(),
+          showCross: true
+      ));
+
+      xrr.add(_categoryController.text
+          .trim()
+          .toString()
+      );
+
+      setState(() {
+        _list = newarr;
+        categoryList = xrr;
+      });
+
+      _categoryController.clear();
+
+      FocusScope.of(context).unfocus();
+    }
+
     return StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection("users")
             .doc(FirebaseAuth.instance.currentUser?.uid.toString())
-            // .collection('notebooks')
-            // .doc('$name')
+        // .collection('notebooks')
+        // .doc('$name')
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
@@ -68,6 +153,8 @@ class _IncomeState extends State<Income> {
             List<dynamic> firebasecategories = snapshot.data?['incomeCategory'];
             List<dynamic> firebasetransactions = snapshot.data?['incomeTransactions'];
             List<dynamic> alltransactions = snapshot.data?['allTransactions'];
+
+            bool isincomecategoryset = snapshot.data?['isIncomeCategorySet'];
 
             //  SET STATES
             List<dynamic> transactions = snapshot.data?['incomeTransactions'].where((element) => (
@@ -78,12 +165,12 @@ class _IncomeState extends State<Income> {
 
             Map<String, dynamic> income = (transactions.isNotEmpty) ? transactions.reduce((value, element){
               return {
-                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
               };
             }) : {'amount': 0};
 
 
-            List<int> result = (transactions.isNotEmpty) ? List.generate(firebasecategories.length, (i) => transactions.where((t) => (t['category'] == firebasecategories[i])).fold(0, (sum, t) => sum + int.parse(t['amount'].toString()))) : List.filled(firebasecategories.length, 0);
+            List<double> result = (transactions.isNotEmpty) ? List.generate(firebasecategories.length, (i) => transactions.where((t) => (t['category'] == firebasecategories[i])).fold(0, (sum, t) => sum + double.parse(t['amount'].toString()))) : List.filled(firebasecategories.length, 0);
 
             List<ChartData> newChartData = List
                 .generate(firebasecategories.length, (i) => ChartData(firebasecategories[i],result[i],colors[i]));
@@ -101,7 +188,8 @@ class _IncomeState extends State<Income> {
                     child: Scaffold(
                       backgroundColor: Color(0xFF161927),
                       extendBody: true,
-                      body: SingleChildScrollView(
+                      body: isincomecategoryset ?
+                      SingleChildScrollView(
                         child: Container(
                             margin: EdgeInsets.only(top: 24.0, bottom: 32.0),
                             padding: EdgeInsets.only(left: 12.0, right: 12.0),
@@ -111,44 +199,44 @@ class _IncomeState extends State<Income> {
                               Row(
                                 children: [
                                   Expanded(
-                                            child:
-                                            Container(
-                                              padding: EdgeInsets.only(
-                                                  left: 16.0, right: 16.0),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFF161927),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black26,
-                                                    offset: Offset(4, 8),
-                                                    blurRadius: 16,
-                                                  ),
-                                                ],
-                                              ),
-                                              height: 240,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'Income',
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                        'Montserrat_600',
-                                                        fontSize: 24,
-                                                        color: Colors.white),
-                                                  ),
-                                                  Text(
-                                                    '${description[0].toUpperCase() + description.substring(1)}',
-                                                    style: TextStyle(
-                                                        fontFamily:
-                                                        'Montserrat_400',
-                                                        color: Colors.white),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                    child:
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                          left: 16.0, right: 16.0),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF161927),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            offset: Offset(4, 8),
+                                            blurRadius: 16,
                                           ),
+                                        ],
+                                      ),
+                                      height: 240,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Income',
+                                            style: TextStyle(
+                                                fontFamily:
+                                                'Montserrat_600',
+                                                fontSize: 24,
+                                                color: Colors.white),
+                                          ),
+                                          Text(
+                                            '${description[0].toUpperCase() + description.substring(1)}',
+                                            style: TextStyle(
+                                                fontFamily:
+                                                'Montserrat_400',
+                                                color: Colors.white),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                   SizedBox(
                                     width: 12,
                                   ),
@@ -208,7 +296,7 @@ class _IncomeState extends State<Income> {
 
                                                   income = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': int.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -269,7 +357,7 @@ class _IncomeState extends State<Income> {
 
                                                   income = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': int.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -363,7 +451,7 @@ class _IncomeState extends State<Income> {
                                             //
                                             //   expenses = transactions.reduce((value, element){
                                             //     return {
-                                            //       'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                            //       'amount': int.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                             //     };
                                             //   });
 
@@ -575,7 +663,7 @@ class _IncomeState extends State<Income> {
 
                                             income = (transactions.length > 0) ? transactions.reduce((value, element){
                                               return {
-                                                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                               };
                                             }) : {'amount': 0};
 
@@ -716,9 +804,9 @@ class _IncomeState extends State<Income> {
                                                                 0xFF576EE0),
                                                           ),
                                                           onTap: () {
-                                                              var toDelete = transactions[index].toString();
-                                                              List<dynamic> changeArr = firebasetransactions.where((element) => (element['fulldate'] != transactions[index]['fulldate'])).toList();
-                                                              List<dynamic> changeAllArr = alltransactions.where((element) => (element['fulldate'] != transactions[index]['fulldate'])).toList();
+                                                            var toDelete = transactions[index].toString();
+                                                            List<dynamic> changeArr = firebasetransactions.where((element) => (element['fulldate'] != transactions[index]['fulldate'])).toList();
+                                                            List<dynamic> changeAllArr = alltransactions.where((element) => (element['fulldate'] != transactions[index]['fulldate'])).toList();
 
                                                             FirebaseFirestore.instance
                                                                 .collection('users')
@@ -1281,7 +1369,257 @@ class _IncomeState extends State<Income> {
 
                               //  CHILD SCREEN WIDGETS
                             ])),
-                      ),
+                      )
+                      :
+                      SingleChildScrollView(
+                        child: Container(
+                            // height: MediaQuery.of(context).size.height,
+                            // color: Colors.white,
+                            padding: EdgeInsets.only(
+                              left: 16.0,
+                              right: 16.0,
+                              top: 48.0
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Register your Income Categories',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+
+                                    color: Colors.white,
+                                    fontFamily: 'Montserrat_400',
+                                    fontSize: 24.0,
+
+                                ),
+                              ),
+                              SizedBox(
+                                height: 16.0,
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(
+                                    left: 8.0, right: 8.0, top: 6.0, bottom: 8.0),
+                                margin: EdgeInsets.only(top: 24.0),
+                                decoration: BoxDecoration(
+                                    color: Color(0xFF1D2135),
+                                    borderRadius: BorderRadius.circular(8.0)),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      color: Color(0xFF576EE0),
+                                    ),
+                                    // MaterialGap(size: 16.0),
+                                    SizedBox(
+                                      width: 8.0,
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        child: Text(
+                                          "Choose your income categories wisely since it can't be changed afterwards !!",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontFamily: 'Montserrat_500'),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                height: 16.0,
+                              ),
+                              SizedBox(
+                                height: 56,
+                                child: Container(
+                                  margin: EdgeInsets.only(top: 24.0),
+                                  child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _list.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return Container(
+                                          // width: 56,
+                                          height: 22,
+                                          margin: EdgeInsets.only(right: 16.0),
+                                          padding: EdgeInsets.only(
+                                              top: 4.0,
+                                              right: 8.0,
+                                              bottom: 4.0,
+                                              left: 8.0),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                              BorderRadius.circular(24.0),
+                                              border: Border.all(
+                                                color: Colors.white,
+                                              )),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                '${_list[index].name.toString()}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontFamily: 'Montserrat_400',
+                                                  fontSize: 16.0,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 4.0,
+                                              ),
+                                              if (_list[index].showCross)
+                                                InkWell(
+                                                    onTap: () {
+                                                      List<Categories> newarr =
+                                                          _list;
+                                                      newarr.removeAt(index);
+                                                      List<String> xrr =
+                                                          categoryList;
+                                                      xrr.removeAt(index);
+                                                      setState(() {
+                                                        _list = newarr;
+                                                        categoryList = xrr;
+                                                      });
+
+                                                    },
+                                                    child: Icon(
+                                                      Icons.whatshot_rounded,
+                                                      color: Color(0xFF576EE0),
+                                                      size: 16.0,
+                                                    ))
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 48.0,
+                              ),
+                              // Container(
+                              //   margin: EdgeInsets.only(top: 24.0),
+                              //   child:
+                              // Row(
+                              //   children: [
+                              //     Expanded(
+                              //       child:
+                              Container(
+                                // color: Colors.white,
+                                child: TextField(
+                                  controller: _categoryController,
+                                  cursorColor: Colors.white,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g. Salary',
+                                    hintStyle: TextStyle(
+                                        color: Colors.grey,
+                                        fontFamily: 'Montserrat_400'),
+                                    labelText: 'Add Income Category',
+                                    labelStyle: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Montserrat_400'),
+                                    floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                                    border: OutlineInputBorder(
+                                      borderSide:
+                                      BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide:
+                                      BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide:
+                                      BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)),
+                                    ),
+                                  ),
+                                  textAlign: TextAlign.left,
+                                  keyboardType: TextInputType.text,
+                                  textCapitalization:
+                                  TextCapitalization.sentences,
+                                  // keyboardAppearance: ,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.0,
+                                      fontFamily: 'Montserrat_400'),
+                                ),
+                              ),
+                              // ),
+                              SizedBox(
+                                height: 16.0,
+                              ),
+                              // Expanded(
+                              //   child:
+                              Container(
+                                color: Colors.black,
+                                child: InkWell(
+                                  onTap: () {
+                                    updateincomecategories();
+                                  },
+                                  child: Container(
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.circular(8.0),
+                                      color: Color(0xFF576EE0),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Add',
+                                        style: TextStyle(
+                                            fontSize: 16.0,
+                                            fontFamily: 'Montserrat_600',
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 16.0,
+                              ),
+
+                              Container(
+                                color: Colors.black,
+                                child: InkWell(
+                                  onTap: () {
+                                    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid.toString()) .update({
+                                      "incomeCategory": categoryList,
+                                      'isIncomeCategorySet': true,
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.circular(8.0),
+                                      color: Color(0xFF576EE0),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Submit',
+                                        style: TextStyle(
+                                            fontSize: 16.0,
+                                            fontFamily: 'Montserrat_600',
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // ),
+                              //   ],
+                              // ),
+                              // ),
+                            ],
+                          ),
+                        ),
+                      )
                     ),
                   ),
                 ));
@@ -1303,6 +1641,12 @@ class _IncomeState extends State<Income> {
 class ChartData {
   ChartData(this.x, this.y, this.color);
   final String x;
-  final int y;
+  final double y;
   final Color color;
+}
+
+class Categories {
+  final String name;
+  final bool showCross;
+  Categories({required this.name, required this.showCross});
 }

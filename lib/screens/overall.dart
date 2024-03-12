@@ -93,22 +93,22 @@ class _OverallState extends State<Overall> {
 
             Map<String, dynamic> expenses = (expensetransactions.isNotEmpty) ? expensetransactions.reduce((value, element){
               return {
-                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
               };
             }) : {'amount': 0};
 
             Map<String, dynamic> income = (incometransactions.isNotEmpty) ? incometransactions.reduce((value, element){
               return {
-                'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
               };
             }) : {'amount': 0};
 
-            List<int> incomeResult = (incometransactions.isNotEmpty) ? List.generate(firebaseIncomeSuperCategories.length, (i) => incometransactions.where((t) => (t['superiorcategory'] == firebaseIncomeSuperCategories[i])).fold(0, (sum, t) => sum + int.parse(t['amount'].toString()))) : List.filled(firebaseIncomeSuperCategories.length, 0);
+            List<double> incomeResult = (incometransactions.isNotEmpty) ? List.generate(firebaseIncomeSuperCategories.length, (i) => incometransactions.where((t) => (t['superiorcategory'] == firebaseIncomeSuperCategories[i])).fold(0, (sum, t) => sum + double.parse(t['amount'].toString()))) : List.filled(firebaseIncomeSuperCategories.length, 0);
 
             List<ChartData> newIncomeChartData = List
                 .generate(firebaseIncomeSuperCategories.length, (i) => ChartData(firebaseIncomeSuperCategories[i],incomeResult[i],colors[i]));
 
-            List<int> expenseResult = (expensetransactions.isNotEmpty) ? List.generate(firebaseExpenseSuperCategories.length, (i) => expensetransactions.where((t) => (t['superiorcategory'] == firebaseExpenseSuperCategories[i])).fold(0, (sum, t) => sum + int.parse(t['amount'].toString()))) : List.filled(firebaseExpenseSuperCategories.length, 0);
+            List<double> expenseResult = (expensetransactions.isNotEmpty) ? List.generate(firebaseExpenseSuperCategories.length, (i) => expensetransactions.where((t) => (t['superiorcategory'] == firebaseExpenseSuperCategories[i])).fold(0, (sum, t) => sum + double.parse(t['amount'].toString()))) : List.filled(firebaseExpenseSuperCategories.length, 0);
 
             List<ChartData> newExpenseChartData = List
                 .generate(firebaseExpenseSuperCategories.length, (i) => ChartData(firebaseExpenseSuperCategories[i],expenseResult[i],colors[i]));
@@ -233,7 +233,7 @@ class _OverallState extends State<Overall> {
 
                                                   expenses = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -294,7 +294,7 @@ class _OverallState extends State<Overall> {
 
                                                   expenses = (transactions.length > 0) ? transactions.reduce((value, element){
                                                     return {
-                                                      'amount': int.parse(value['amount'].toString()) + int.parse(element['amount'].toString()),
+                                                      'amount': double.parse(value['amount'].toString()) + double.parse(element['amount'].toString()),
                                                     };
                                                   }) : {'amount': 0};
 
@@ -1050,6 +1050,6 @@ class _OverallState extends State<Overall> {
 class ChartData {
   ChartData(this.x, this.y, this.color);
   final String x;
-  final int y;
+  final double y;
   final Color color;
 }

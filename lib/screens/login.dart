@@ -29,112 +29,16 @@ class _LoginState extends State<Login> {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _loading = false;
+  bool _loading2 = false;
   bool toggle = true;
   bool _see = false;
 
-  final Stream<QuerySnapshot> _usersRefStream =
-      FirebaseFirestore.instance.collection('users').snapshots();
-
-  void login() async {
-    if (_emailController.text.trim().isEmpty) {
-      final snackBar = SnackBar(
-        /// need to set following properties for best effect of awesome_snackbar_content
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        content: AwesomeSnackbarContent(
-          title: 'Snap !!',
-          message: 'Fill the email field',
-
-          /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-          contentType: ContentType.failure,
-        ),
-      );
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
-
-      return;
-    }
-
-    if (_passwordController.text.trim().isEmpty) {
-      final snackBar = SnackBar(
-        /// need to set following properties for best effect of awesome_snackbar_content
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        content: AwesomeSnackbarContent(
-          title: 'Snap !!',
-          message: 'Fill the password field',
-
-          /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-          contentType: ContentType.failure,
-        ),
-      );
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
-
-      return;
-    }
-
-    setState(() {
-      _loading = true;
-    });
-
-    try {
-      await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim().toString(),
-          password: _passwordController.text.trim().toString());
-
-      final snackBar = await SnackBar(
-        /// need to set following properties for best effect of awesome_snackbar_content
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        content: AwesomeSnackbarContent(
-          title: 'Congratulations!',
-          message: 'LoggedIn Successfully',
-
-          /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-          contentType: ContentType.success,
-        ),
-      );
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
-    } catch (error) {
-      final snackBar = SnackBar(
-        /// need to set following properties for best effect of awesome_snackbar_content
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        content: AwesomeSnackbarContent(
-          title: 'Snap !!',
-          message: '$error',
-
-          /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-          contentType: ContentType.failure,
-        ),
-      );
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(snackBar);
-    }
-
-    setState(() {
-      _loading = false;
-    });
-  }
+  final Stream<QuerySnapshot> _usersRefStream = FirebaseFirestore.instance.collection('users').snapshots();
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference usersRef =
-        FirebaseFirestore.instance.collection('users');
+
+    CollectionReference usersRef = FirebaseFirestore.instance.collection('users');
 
     void signup() async {
       if (_emailController.text.trim().isEmpty) {
@@ -209,8 +113,8 @@ class _LoginState extends State<Login> {
           ..hideCurrentSnackBar()
           ..showSnackBar(snackBar);
 
-        await usersRef.doc(user.user?.uid).set({
-          'uid': user.user?.uid,
+        await usersRef.doc(FirebaseAuth.instance.currentUser?.uid).set({
+          'uid': FirebaseAuth.instance.currentUser?.uid,
           'password': _passwordController.text.trim().toString(),
           'email': _emailController.text.trim().toString(),
           'notebooks': [],
@@ -219,6 +123,8 @@ class _LoginState extends State<Login> {
           'expenseTransactions': [],
           'allTransactions': [],
           'reminders': [],
+          'isAnon': false,
+          'isIncomeCategorySet': false,
         });
 
         print("Successfully created new user: ${user.toString()}");
@@ -245,6 +151,175 @@ class _LoginState extends State<Login> {
           ..showSnackBar(snackBar);
 
         print("Error creating new user: ${error.toString()}");
+      }
+
+      setState(() {
+        _loading = false;
+      });
+    }
+
+    void signupanon() async {
+
+      setState(() {
+        _loading2 = true;
+      });
+
+      try {
+        final UserCredential user = await _auth.signInAnonymously();
+
+        final snackBar = await SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Congratulations!',
+            message: 'Signed In Successfully',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.success,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
+        await usersRef.doc(FirebaseAuth.instance.currentUser?.uid).set({
+          'uid': FirebaseAuth.instance.currentUser?.uid,
+          'password': '',
+          'email': '',
+          'notebooks': [],
+          'incomeCategory': categoryList,
+          'incomeTransactions': [],
+          'expenseTransactions': [],
+          'allTransactions': [],
+          'reminders': [],
+          'isAnon': true,
+          'isIncomeCategorySet': false,
+        });
+
+        print("Successfully created new user: ${user.toString()}");
+      } catch (error) {
+        _emailController.clear();
+        _passwordController.clear();
+
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap!',
+            message: '$error',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
+        print("Error creating new user: ${error.toString()}");
+      }
+
+      setState(() {
+        _loading2 = false;
+      });
+
+    }
+
+    void login() async {
+      if (_emailController.text.trim().isEmpty) {
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap !!',
+            message: 'Fill the email field',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
+        return;
+      }
+
+      if (_passwordController.text.trim().isEmpty) {
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap !!',
+            message: 'Fill the password field',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
+        return;
+      }
+
+      setState(() {
+        _loading = true;
+      });
+
+      try {
+        await _auth.signInWithEmailAndPassword(
+            email: _emailController.text.trim().toString(),
+            password: _passwordController.text.trim().toString());
+
+        final snackBar = await SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Congratulations!',
+            message: 'LoggedIn Successfully',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.success,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+      } catch (error) {
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Snap !!',
+            message: '$error',
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.failure,
+          ),
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
       }
 
       setState(() {
@@ -468,253 +543,6 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                       if (toggle)
-                        Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.only(
-                                  left: 8.0, right: 8.0, top: 6.0, bottom: 8.0),
-                              margin: EdgeInsets.only(top: 24.0),
-                              decoration: BoxDecoration(
-                                  color: Color(0xFF1D2135),
-                                  borderRadius: BorderRadius.circular(8.0)),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline_rounded,
-                                    color: Color(0xFF576EE0),
-                                  ),
-                                  // MaterialGap(size: 16.0),
-                                  SizedBox(
-                                    width: 8.0,
-                                  ),
-                                  Text(
-                                    'Choose your income categories !!',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'Montserrat_500'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 56,
-                              child: Container(
-                                margin: EdgeInsets.only(top: 24.0),
-                                child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: _list.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Container(
-                                        // width: 56,
-                                        height: 22,
-                                        margin: EdgeInsets.only(right: 16.0),
-                                        padding: EdgeInsets.only(
-                                            top: 4.0,
-                                            right: 8.0,
-                                            bottom: 4.0,
-                                            left: 8.0),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(24.0),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                            )),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              '${_list[index].name.toString()}',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontFamily: 'Montserrat_400',
-                                                fontSize: 16.0,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              width: 4.0,
-                                            ),
-                                            if (_list[index].showCross)
-                                              InkWell(
-                                                  onTap: () {
-                                                    List<Categories> newarr =
-                                                        _list;
-                                                    newarr.removeAt(index);
-                                                    List<String> xrr =
-                                                        categoryList;
-                                                    xrr.removeAt(index);
-                                                    setState(() {
-                                                      _list = newarr;
-                                                      categoryList = xrr;
-                                                    });
-                                                  },
-                                                  child: Icon(
-                                                    Icons.whatshot_rounded,
-                                                    color: Color(0xFF576EE0),
-                                                    size: 16.0,
-                                                  ))
-                                          ],
-                                        ),
-                                      );
-                                    }),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(top: 24.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      // color: Colors.white,
-                                      child: TextField(
-                                        controller: _categoryController,
-                                        cursorColor: Colors.white,
-                                        decoration: InputDecoration(
-                                          hintText: 'Add Category',
-                                          hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontFamily: 'Montserrat_400'),
-                                          labelText: 'Add Category',
-                                          labelStyle: TextStyle(
-                                              color: Colors.white,
-                                              fontFamily: 'Montserrat_400'),
-                                          floatingLabelBehavior:
-                                              FloatingLabelBehavior.always,
-                                          border: OutlineInputBorder(
-                                            borderSide:
-                                                BorderSide(color: Colors.white),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(8.0)),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide:
-                                                BorderSide(color: Colors.white),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(8.0)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide:
-                                                BorderSide(color: Colors.white),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(8.0)),
-                                          ),
-                                        ),
-                                        textAlign: TextAlign.left,
-                                        keyboardType: TextInputType.text,
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        // keyboardAppearance: ,
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16.0,
-                                            fontFamily: 'Montserrat_400'),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 16.0,
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      color: Colors.black,
-                                      child: InkWell(
-                                        onTap: () {
-                                          if (_categoryController.text.trim() ==
-                                              "") {
-                                            final snackBar = SnackBar(
-                                              /// need to set following properties for best effect of awesome_snackbar_content
-                                              elevation: 0,
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              content: AwesomeSnackbarContent(
-                                                title: 'Snap !!',
-                                                message:
-                                                    'Empty field detected !',
-
-                                                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                                                contentType:
-                                                    ContentType.failure,
-                                              ),
-                                            );
-
-                                            ScaffoldMessenger.of(context)
-                                              ..hideCurrentSnackBar()
-                                              ..showSnackBar(snackBar);
-
-                                            return;
-                                          }
-
-                                          if (categoryList.contains(
-                                              _categoryController.text
-                                                  .toString())) {
-                                            final snackBar = SnackBar(
-                                              /// need to set following properties for best effect of awesome_snackbar_content
-                                              elevation: 0,
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              content: AwesomeSnackbarContent(
-                                                title: 'Snap !!',
-                                                message:
-                                                    'Duplicate categories found',
-
-                                                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                                                contentType:
-                                                    ContentType.failure,
-                                              ),
-                                            );
-
-                                            ScaffoldMessenger.of(context)
-                                              ..hideCurrentSnackBar()
-                                              ..showSnackBar(snackBar);
-                                            return;
-                                          }
-
-                                          List<Categories> newarr = _list;
-                                          List<String> xrr = categoryList;
-                                          newarr.add(Categories(
-                                              name: _categoryController.text
-                                                  .trim()
-                                                  .toString(),
-                                              showCross: true));
-                                          xrr.add(_categoryController.text
-                                              .trim()
-                                              .toString());
-                                          setState(() {
-                                            _list = newarr;
-                                            categoryList = xrr;
-                                          });
-
-                                          _categoryController.clear();
-                                        },
-                                        child: Container(
-                                          height: 56,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            color: Color(0xFF576EE0),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'Add',
-                                              style: TextStyle(
-                                                  fontSize: 16.0,
-                                                  fontFamily: 'Montserrat_600',
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      if (toggle)
                         Container(
                           margin: EdgeInsets.only(top: 24.0),
                           child: Row(
@@ -761,8 +589,56 @@ class _LoginState extends State<Login> {
                                 color: Color(0xFF576EE0),
                               ),
                               child: Center(
-                                child: Text(
+                                child: _loading
+                                    ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                    : Text(
                                   'Sign-Up',
+                                  style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontFamily: 'Montserrat_600',
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (toggle)
+                        Container(
+                          margin: EdgeInsets.only(top: 24.0),
+                          child: Text(
+                            '- OR -',
+                            style: TextStyle(
+                                fontFamily: 'Montserrat_500',
+                                color: Colors.white),
+                            ),
+                        ),
+                      if (toggle)
+                        Container(
+                          margin: EdgeInsets.only(top: 24.0),
+                          child: InkWell(
+                            onTap: () {
+                              signupanon();
+                              FocusScopeNode currentFocus =
+                              FocusScope.of(context);
+                              if (!currentFocus.hasPrimaryFocus) {
+                                currentFocus.unfocus();
+                              }
+                            },
+                            child: Container(
+                              height: 56,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8.0),
+                                color: Color(0xFF576EE0),
+                              ),
+                              child: Center(
+                                child: _loading2
+                                    ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                    : Text(
+                                  'Sign-In as Guest',
                                   style: TextStyle(
                                       fontSize: 16.0,
                                       fontFamily: 'Montserrat_600',

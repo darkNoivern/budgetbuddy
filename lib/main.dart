@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+// import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -21,10 +21,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  NotificationService().initNotification();
-  tz.initializeTimeZones();
-  Stripe.publishableKey =
-  'pk_test_51MTnCWSIUAFS1RWiJuTzDBROERZ3lMIw8kZ8EpkPf8OLlyv8Z9ybiVoTZe7XzmVjtsPVobKzqWICU2UP18OM9Qk900kNhaK4hD';
+  // NotificationService().initNotification();
+  // tz.initializeTimeZones();
+  // Stripe.publishableKey =
+  // 'pk_test_51MTnCWSIUAFS1RWiJuTzDBROERZ3lMIw8kZ8EpkPf8OLlyv8Z9ybiVoTZe7XzmVjtsPVobKzqWICU2UP18OM9Qk900kNhaK4hD';
   runApp(const MyApp());
 }
 
@@ -68,8 +68,18 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF161927),
+          elevation: 8,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.black,
+          foregroundColor: Color(0xFF161927),
+          iconTheme: IconThemeData(
+            color: Colors.white, // Set the color of icons in the AppBar
+          ),
+        ),
         textTheme: TextTheme(
-          headline1: TextStyle(fontFamily: 'Montserrat_500'),
+          // headline1: TextStyle(fontFamily: 'Montserrat_500'),
           // bodyLarge: TextStyle(fontFamily: 'Montserrat_500'),
         ),
         snackBarTheme: SnackBarThemeData(

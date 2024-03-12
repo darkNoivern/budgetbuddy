@@ -104,7 +104,7 @@ class _NotebooksState extends State<Notebooks> {
                                         horizontal: 12.0),
                                     child: Container(
                                       padding: EdgeInsets.only(
-                                          top: 56.0,
+                                          top: 48.0,
                                           right: 8.0,
                                           bottom: 4.0,
                                           left: 24.0),
@@ -183,6 +183,7 @@ class _NotebooksState extends State<Notebooks> {
                                 },
                                 separatorBuilder: (context, index) {
                                   return Divider(
+                                    color: Colors.transparent,
                                     height: 24,
                                   );
                                 },
